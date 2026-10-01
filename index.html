@@ -111,7 +111,13 @@ function saveUpdatedHtml(){
  if(!DB.length){status.className='status error';status.textContent='Importe os dados antes de salvar o HTML.';return;}
  const payload=DB.map(d=>({...d,validade:d.validade instanceof Date?d.validade.toISOString():d.validade}));
  const safe=JSON.stringify(payload).replace(/</g,'\\u003c').replace(/>/g,'\\u003e').replace(/&/g,'\\u0026');
- const saved=document.documentElement.outerHTML.replace('const SAVED_DATA=null;',`const SAVED_DATA=${safe};`);
+ const exportDoc=document.documentElement.cloneNode(true);
+ const importPanel=exportDoc.querySelector('.import');
+ if(importPanel)importPanel.remove();
+ const saveButton=exportDoc.querySelector('#saveHtml');
+ if(saveButton)saveButton.remove();
+ let saved='<!DOCTYPE html>\n'+exportDoc.outerHTML;
+ saved=saved.replace('const SAVED_DATA=null;',`const SAVED_DATA=${safe};`);
  const blob=new Blob([saved],{type:'text/html;charset=utf-8'});
  const url=URL.createObjectURL(blob);
  const a=document.createElement('a');a.href=url;a.download='dashboard_estoque_revisao_bk_atualizado.html';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
@@ -120,6 +126,7 @@ function saveUpdatedHtml(){
 
 let workbook=null;
 const fileInput=document.getElementById('file'),picker=document.getElementById('sheetPicker'),sheetList=document.getElementById('sheetList'),status=document.getElementById('status');
+if(fileInput){
 fileInput.addEventListener('change',async e=>{
  const file=e.target.files?.[0];if(!file)return;status.className='status';status.textContent='Lendo planilha...';
  try{if(!window.XLSX)throw new Error('Não foi possível carregar o leitor Excel. Verifique sua conexão com a internet e tente novamente.');
@@ -135,12 +142,13 @@ document.getElementById('importSheets').addEventListener('click',()=>{
  DB=rows;document.getElementById('saveHtml').disabled=false;product.innerHTML='<option value="Todos">Todos os produtos</option>'+[...new Set(DB.map(d=>d.grupo))].map(n=>`<option value="${n}">${n}</option>`).join('');product.value='Todos';month.value='Todos';search.value='';draw();status.className='status ok';status.textContent=`Importação concluída: ${rows.length} lotes importados de ${selected.length} aba(s): ${selected.join(', ')}.`;
  }catch(err){status.className='status error';status.textContent=err.message||'Erro ao importar as abas selecionadas.'}
 });
+}
 [product,month,search].forEach(el=>el.addEventListener('input',draw));
 if(Array.isArray(SAVED_DATA)&&SAVED_DATA.length){
  DB=SAVED_DATA.map(d=>({...d,validade:new Date(d.validade)}));
- document.getElementById('saveHtml').disabled=false;
+ const saveButton=document.getElementById('saveHtml');if(saveButton)saveButton.disabled=false;
  product.innerHTML='<option value="Todos">Todos os produtos</option>'+[...new Set(DB.map(d=>d.grupo))].map(n=>`<option value="${n}">${n}</option>`).join('');
- status.className='status ok';status.textContent=`Dashboard carregado com ${DB.length} lotes salvos no HTML.`;
+ if(status){status.className='status ok';status.textContent=`Dashboard carregado com ${DB.length} lotes salvos no HTML.`;}
 }
 draw();
 </script></body></html>
