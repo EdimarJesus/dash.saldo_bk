@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Dashboard automático · Estoque para Revisão BK</title>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+:root{--navy:#123a78;--blue:#1760aa;--ketchup:#fa0000;--mustard:#ff970f;--ink:#183153;--muted:#667892;--line:#dce5ef;--bg:#f3f6fa;--white:#fff}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);font-family:Inter,Segoe UI,Arial,sans-serif;color:var(--ink)}
+.wrap{max-width:1600px;margin:auto;padding:28px}
+header{background:linear-gradient(110deg,#103575,#1a477f);color:#fff;border-radius:22px;padding:28px 34px;box-shadow:0 12px 30px #18315318;display:flex;align-items:center;justify-content:space-between;gap:20px}
+.kicker{font-size:13px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#bcd3f1}h1{font-size:30px;margin:8px 0 6px;font-weight:850;letter-spacing:-.5px}.sub{font-size:14px;color:#e1eafa}.brand{text-align:right;font-weight:800;line-height:1.5}.brand span{display:block;font-size:13px;font-weight:500;color:#d2def0}
+.import{background:#fff;border:1px solid var(--line);border-radius:18px;padding:18px 22px;margin:18px 0;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;box-shadow:0 8px 22px #1831530b}
+.import strong{display:block;margin-bottom:5px}.import small{color:var(--muted)}.actions{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+button,.filebtn{border:0;border-radius:10px;padding:11px 16px;font-weight:750;font-size:13px;cursor:pointer;background:var(--navy);color:white}.filebtn{display:inline-flex;align-items:center;gap:8px}.secondary{background:#edf3fa;color:#23466f;border:1px solid #d7e2ef}input[type=file]{display:none}
+.status{font-size:12px;color:var(--muted);margin-top:8px}.status.error{color:#c62828}.status.ok{color:#14804b}
+.sheet-picker{display:none;width:100%;border-top:1px solid var(--line);padding-top:14px;margin-top:2px}.sheet-picker.visible{display:block}.sheet-title{font-size:12px;font-weight:800;color:#526783;margin-bottom:10px}.sheet-list{display:flex;flex-wrap:wrap;gap:8px 16px;margin-bottom:12px}.sheet-option{display:flex;align-items:center;gap:7px;font-size:13px;color:var(--ink);cursor:pointer}.sheet-option input{display:inline-block;accent-color:var(--navy)}.import-btn{margin-left:4px}
+.cards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin:20px 0}
+.card{background:#fff;border:1px solid var(--line);border-left:6px solid var(--ketchup);border-radius:18px;padding:20px 24px;box-shadow:0 8px 22px #1831530b;min-width:0}
+.card.mustard{border-left-color:var(--mustard)}.card.total{border-left-color:var(--blue)}
+.label{font-size:12px;font-weight:800;letter-spacing:.06em;color:#62738b;text-transform:uppercase}.value{font-size:clamp(25px,3vw,36px);font-weight:850;margin:7px 0;color:var(--ketchup)}.mustard .value{color:var(--mustard)}.total .value{color:var(--blue)}.mini{font-size:12px;color:var(--muted)}
+.panel{background:#fff;border:1px solid var(--line);border-radius:20px;padding:26px 28px;margin:18px 0;box-shadow:0 8px 24px #18315308}
+.panel h2{margin:0 0 5px;font-size:21px;color:#123a78}.hint{margin:0 0 18px;color:var(--muted);font-size:13px}
+.controls{display:flex;gap:12px;flex-wrap:wrap;margin:16px 0}.controls label{font-size:12px;font-weight:700;color:#667892;display:flex;flex-direction:column;gap:6px}.controls select,.controls input{border:1px solid #ccd8e6;border-radius:10px;padding:10px 12px;background:#fff;color:var(--ink);min-width:190px;font-size:13px}
+.chart{width:100%;height:auto;display:block;overflow:visible}.gridline{stroke:#e2eaf2;stroke-width:1}.axis{font-size:12px;fill:#667892}.month{font-size:12px;fill:#183153;font-weight:650}.barlabel{font-size:11px;font-weight:800}.legend{display:flex;gap:22px;flex-wrap:wrap;font-size:13px;font-weight:700;color:#5e718b;margin:10px 0 0}.dot{width:11px;height:11px;border-radius:50%;display:inline-block;margin-right:7px}
+.tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;font-size:13px}th{text-align:left;color:#63758d;background:#f5f8fc;font-size:11px;text-transform:uppercase;letter-spacing:.04em}td,th{padding:12px 13px;border-bottom:1px solid #e7edf4}td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}.totalrow td{font-weight:850;background:#f8fafc}.pill{display:inline-block;padding:4px 9px;border-radius:20px;background:#edf4fd;color:#1a5c9f;font-weight:750;font-size:11px}
+.footer{text-align:center;color:#8290a4;font-size:11px;padding:20px 0 4px}
+@media(max-width:850px){.wrap{padding:14px}header{padding:22px;align-items:flex-start;flex-direction:column}.brand{text-align:left}h1{font-size:24px}.cards{grid-template-columns:1fr}.panel{padding:20px 16px}}
+@media print{body{background:#fff}.wrap{max-width:none;padding:10px}header,.card,.panel{box-shadow:none;break-inside:avoid}.controls,.import{display:none}}
+</style></head>
+<body><div class="wrap">
+<header><div><div class="kicker">INOV CARGO · CONTROLE DE REVISÃO</div><h1>Estoque disponível para Revisão BK</h1><div class="sub" id="subtitle">Importe a planilha Excel para atualizar os dados do dashboard.</div></div><div class="brand">REVISÃO BK<span>Inov Cargo</span></div></header>
+<section class="import"><div><strong>Atualização por planilha Excel</strong><small>Selecione o arquivo .xlsx e escolha uma ou mais abas para importar.</small><div id="status" class="status">Aguardando importação da planilha.</div></div><div class="actions"><label class="filebtn" for="file">▣ Selecionar Excel</label><input id="file" type="file" accept=".xlsx,.xls"><button id="saveHtml" class="secondary" onclick="saveUpdatedHtml()" disabled>Salvar HTML atualizado</button><button class="secondary" onclick="window.print()">Imprimir / salvar PDF</button></div><div id="sheetPicker" class="sheet-picker"><div class="sheet-title">Selecione as abas que deseja importar:</div><div id="sheetList" class="sheet-list"></div><button id="importSheets" class="import-btn">Importar abas selecionadas</button></div></section>
+<section class="cards" id="cards"><div class="card total"><div class="label">Total geral para revisar</div><div class="value" id="totalAll">—</div><div class="mini">Soma dos produtos identificados pelo SKU</div></div></section>
+<section class="panel"><h2>Vencimentos por mês</h2><p class="hint">Quantidade de caixas por mês de validade, classificada pela coluna SKU. Selecione um produto para detalhar.</p>
+<div class="controls"><label>Produto<select id="product"><option value="Todos">Todos os produtos</option><option value="Ketchup BK">Ketchup BK</option><option value="Mostarda BK">Mostarda BK</option></select></label><label>Mês de vencimento<select id="month"><option value="Todos">Todos os meses</option></select></label><label>Pesquisar lote ou material<input id="search" placeholder="Digite lote ou código"></label></div>
+<svg id="chart" class="chart" viewBox="0 0 1400 480" role="img" aria-label="Gráfico de vencimentos por mês"></svg><div class="legend" id="legend"></div>
+</section>
+<section class="panel"><h2>Resumo mensal de vencimentos</h2><p class="hint">Totais de saldo por mês, considerando a data de validade da base.</p><div class="tablewrap"><table><thead id="monthlyHead"><tr><th>Mês de vencimento</th><th class="num">Total mensal (cx)</th></tr></thead><tbody id="monthlyBody"><tr><td colspan="2">Importe uma planilha para visualizar os dados.</td></tr></tbody></table></div></section>
+<section class="panel"><h2>Detalhamento por lote</h2><p class="hint">Lista dos saldos que compõem os totais, com filtro por produto, mês e pesquisa.</p><div class="tablewrap"><table><thead><tr><th>Produto (SKU)</th><th>Material</th><th>Lote</th><th>Validade</th><th class="num">Saldo (cx)</th></tr></thead><tbody id="detailBody"><tr><td colspan="5">Nenhum dado importado.</td></tr></tbody></table></div></section>
+<div class="footer">Dashboard desenvolvido para acompanhamento operacional · INOV CARGO</div></div>
+<script>
+let DB=[];
+const SAVED_DATA=null;
+const fmt=n=>new Intl.NumberFormat('pt-BR',{maximumFractionDigits:0}).format(n);
+const monthsPt=['Jan','Fev','Mar','Abr','Mai','Jun','Jul','Ago','Set','Out','Nov','Dez'];
+const product=document.getElementById('product'),month=document.getElementById('month'),search=document.getElementById('search');
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const norm=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim();
+function dateValue(v){
+ if(v instanceof Date&&!isNaN(v))return v;
+ if(typeof v==='number'&&window.XLSX){const p=XLSX.SSF.parse_date_code(v);if(p)return new Date(p.y,p.m-1,p.d,12)}
+ let s=String(v??'').trim();let m=s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);if(m)return new Date(+m[3],+m[2]-1,+m[1],12);
+ let d=new Date(s);return isNaN(d)?null:d;
+}
+function monthKey(d){return `${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`}
+function monthLabel(k){let [m,y]=k.split('/');return `${monthsPt[+m-1]}/${y}`}
+function findCol(headers,patterns){return headers.findIndex(h=>patterns.some(p=>norm(h).includes(norm(p))))}
+function classifySku(sku){
+ const s=norm(sku);
+ if(s.includes('ketchup')||s.includes('catchup'))return 'Ketchup BK';
+ if(s.includes('mostarda')||s.includes('mustard'))return 'Mostarda BK';
+ return String(sku??'').trim()||'Produto não identificado';
+}
+function parseSheet(wb,sheetName){
+ const ws=wb.Sheets[sheetName];if(!ws)return [];
+ const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:null,raw:true});
+ let hi=rows.findIndex(r=>r.some(c=>norm(c)==='material')&&r.some(c=>norm(c)==='sku')&&r.some(c=>norm(c).includes('validade'))&&r.some(c=>norm(c).includes('saldo')));
+ if(hi<0)hi=rows.findIndex(r=>r.some(c=>norm(c)==='sku')&&r.some(c=>norm(c).includes('validade'))&&r.some(c=>norm(c).includes('saldo')));
+ if(hi<0)hi=0;
+ const headers=(rows[hi]||[]).map(x=>String(x??''));
+ const material=findCol(headers,['material']), sku=findCol(headers,['sku']), lot=findCol(headers,['lote']);
+ const valid=headers.findIndex(h=>norm(h).includes('validade'));
+ const saldo=findCol(headers,['saldo atual','saldo']);
+ if(material<0||sku<0||lot<0||valid<0||saldo<0)throw new Error(`A aba "${sheetName}" precisa conter as colunas Material, SKU, Lote, Data Validade e Saldo Atual.`);
+ const result=[];
+ for(const r of rows.slice(hi+1)){
+  const mat=String(r[material]??'').trim(), skuValue=String(r[sku]??'').trim(), lote=String(r[lot]??'').trim(), dt=dateValue(r[valid]), qty=Number(String(r[saldo]??'').replace(',','.'));
+  if(!mat||!skuValue||!lote||!dt||!Number.isFinite(qty)||qty<=0)continue;
+  result.push({material:mat,sku:skuValue,produto:skuValue,lote,validade:dt,mes:monthKey(dt),grupo:classifySku(skuValue),aba:sheetName,saldo:qty});
+ }
+ return result;
+}
+function filtered(){let p=product.value,m=month.value,q=norm(search.value);return DB.filter(d=>(p==='Todos'||d.grupo===p)&&(m==='Todos'||d.mes===m)&&(!q||norm(d.lote).includes(q)||norm(d.material).includes(q)||norm(d.produto).includes(q)))}
+function palette(i,name){const n=norm(name);if(n==='ketchup bk'||n.includes('ketchup'))return '#fa0000';if(n==='mostarda bk'||n.includes('mostarda')||n.includes('mustard'))return '#ff970f';return ['#1760aa','#16a085','#8e44ad','#d35400','#2c3e50','#27ae60'][i%6]}
+function draw(){
+ const names=[...new Set(DB.map(d=>d.grupo))];
+ const months=[...new Set(DB.map(d=>d.mes))].sort((a,b)=>{let [am,ay]=a.split('/').map(Number),[bm,by]=b.split('/').map(Number);return ay-by||am-bm});
+ const old=month.value;month.innerHTML='<option value="Todos">Todos os meses</option>'+months.map(m=>`<option value="${m}">${monthLabel(m)}</option>`).join('');if(months.includes(old))month.value=old;
+ const colors=Object.fromEntries(names.map((n,i)=>[n,palette(i,n)]));
+ const cards=names.map(n=>{let total=DB.filter(d=>d.grupo===n).reduce((a,d)=>a+d.saldo,0),idx=names.indexOf(n),cls=idx===1?' mustard':idx>1?'':'',color=colors[n];return `<div class="card${cls}" style="border-left-color:${color}"><div class="label">Total para revisar · ${n}</div><div class="value" style="color:${color}">${fmt(total)}</div><div class="mini">Soma do saldo atual do produto identificado pelo SKU</div></div>`}).join('');
+ const total=DB.reduce((a,d)=>a+d.saldo,0);
+ document.getElementById('cards').innerHTML=cards+`<div class="card total"><div class="label">Total geral para revisar</div><div class="value">${fmt(total)}</div><div class="mini">Soma dos produtos identificados pelo SKU</div></div>`;
+ document.getElementById('subtitle').textContent=DB.length?`Posição por produto (SKU) e vencimento mensal · Atualizado em ${new Date().toLocaleDateString('pt-BR')}`:'Importe a planilha Excel para atualizar os dados do dashboard.';
+ const groups=(month.value==='Todos'?months:months.filter(x=>x===month.value)).map(key=>{let rows=filtered().filter(d=>d.mes===key);return {key,label:monthLabel(key),vals:names.map(n=>rows.filter(d=>d.grupo===n).reduce((a,d)=>a+d.saldo,0))}});
+ const vals=groups.flatMap(g=>g.vals),max=Math.max(1,...vals),stepY=Math.max(1,Math.ceil(max/4/100)*100),ymax=stepY*4,W=1400,H=480,L=90,R=30,T=28,B=90,ph=H-T-B,pw=W-L-R,step=pw/Math.max(1,groups.length);
+ let svg='';for(let i=0;i<=4;i++){let v=ymax*i/4,y=T+ph-(v/ymax)*ph;svg+=`<line x1="${L}" y1="${y}" x2="${W-R}" y2="${y}" class="gridline"/><text x="${L-14}" y="${y+4}" text-anchor="end" class="axis">${fmt(v)}</text>`}
+ svg+=`<line x1="${L}" y1="${T+ph}" x2="${W-R}" y2="${T+ph}" stroke="#b9c8d8" stroke-width="1.8"/>`;
+ groups.forEach(g=>{let cx=L+step*(groups.indexOf(g)+.5),visible=names.map((n,i)=>({name:n,val:g.vals[i],color:colors[n]})).filter(x=>product.value==='Todos'||x.name===product.value),bw=Math.min(34,step*.7/Math.max(1,visible.length)),gap=8,totalW=visible.length*bw+Math.max(0,visible.length-1)*gap,startX=cx-totalW/2;visible.forEach((a,j)=>{let h=a.val/ymax*ph,y=T+ph-h,x=startX+j*(bw+gap);svg+=`<rect x="${x}" y="${y}" width="${bw}" height="${h}" rx="5" fill="${a.color}"/>`;if(a.val>0)svg+=`<text x="${x+bw/2}" y="${Math.max(T+12,y-8)}" text-anchor="middle" class="barlabel" fill="${a.color}">${fmt(a.val)}</text>`});svg+=`<text x="${cx}" y="${H-48}" text-anchor="middle" class="month">${g.label}</text>`});
+ document.getElementById('chart').innerHTML=svg;
+ document.getElementById('legend').innerHTML=names.map(n=>`<span><i class="dot" style="background:${colors[n]}"></i>${n}</span>`).join('');
+ document.getElementById('monthlyHead').innerHTML='<tr><th>Mês de vencimento</th>'+names.map(n=>`<th class="num">${n} (cx)</th>`).join('')+'<th class="num">Total mensal (cx)</th></tr>';
+ const monthly=months.map(key=>{let rows=DB.filter(d=>d.mes===key),sums=names.map(n=>rows.filter(d=>d.grupo===n).reduce((a,d)=>a+d.saldo,0));return `<tr><td>${monthLabel(key)}</td>${sums.map(v=>`<td class="num">${fmt(v)}</td>`).join('')}<td class="num"><b>${fmt(sums.reduce((a,b)=>a+b,0))}</b></td></tr>`}).join('');
+ const totals=names.map(n=>DB.filter(d=>d.grupo===n).reduce((a,d)=>a+d.saldo,0));
+ document.getElementById('monthlyBody').innerHTML=monthly+`<tr class="totalrow"><td>TOTAL GERAL</td>${totals.map(v=>`<td class="num">${fmt(v)}</td>`).join('')}<td class="num">${fmt(totals.reduce((a,b)=>a+b,0))}</td></tr>`;
+ const details=filtered().slice().sort((a,b)=>a.validade-b.validade||a.grupo.localeCompare(b.grupo)||a.lote.localeCompare(b.lote));
+ document.getElementById('detailBody').innerHTML=details.map(d=>`<tr><td><span class="pill">${d.grupo}</span></td><td>${d.material}</td><td>${d.lote}</td><td>${d.validade.toLocaleDateString('pt-BR')}</td><td class="num"><b>${fmt(d.saldo)}</b></td></tr>`).join('')||'<tr><td colspan="5">Nenhum registro encontrado.</td></tr>';
+}
+
+function saveUpdatedHtml(){
+ if(!DB.length){status.className='status error';status.textContent='Importe os dados antes de salvar o HTML.';return;}
+ const payload=DB.map(d=>({...d,validade:d.validade instanceof Date?d.validade.toISOString():d.validade}));
+ const safe=JSON.stringify(payload).replace(/</g,'\\u003c').replace(/>/g,'\\u003e').replace(/&/g,'\\u0026');
+ const saved=document.documentElement.outerHTML.replace('const SAVED_DATA=null;',`const SAVED_DATA=${safe};`);
+ const blob=new Blob([saved],{type:'text/html;charset=utf-8'});
+ const url=URL.createObjectURL(blob);
+ const a=document.createElement('a');a.href=url;a.download='dashboard_estoque_revisao_bk_atualizado.html';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
+ status.className='status ok';status.textContent='HTML atualizado preparado para salvar, com os dados importados incorporados.';
+}
+
+let workbook=null;
+const fileInput=document.getElementById('file'),picker=document.getElementById('sheetPicker'),sheetList=document.getElementById('sheetList'),status=document.getElementById('status');
+fileInput.addEventListener('change',async e=>{
+ const file=e.target.files?.[0];if(!file)return;status.className='status';status.textContent='Lendo planilha...';
+ try{if(!window.XLSX)throw new Error('Não foi possível carregar o leitor Excel. Verifique sua conexão com a internet e tente novamente.');
+ workbook=XLSX.read(await file.arrayBuffer(),{type:'array',cellDates:true});
+ sheetList.innerHTML=workbook.SheetNames.map(name=>`<label class="sheet-option"><input type="checkbox" value="${esc(name)}">${esc(name)}</label>`).join('');
+ picker.classList.add('visible');status.textContent=`Arquivo carregado: ${file.name}. Selecione as abas desejadas e clique em “Importar abas selecionadas”.`;
+ }catch(err){picker.classList.remove('visible');status.className='status error';status.textContent=err.message||'Erro ao ler a planilha.'}
+});
+document.getElementById('importSheets').addEventListener('click',()=>{
+ try{if(!workbook)throw new Error('Selecione primeiro um arquivo Excel.');
+ const selected=[...sheetList.querySelectorAll('input[type="checkbox"]:checked')].map(x=>x.value);if(!selected.length)throw new Error('Selecione pelo menos uma aba para importar.');
+ const rows=selected.flatMap(name=>parseSheet(workbook,name));if(!rows.length)throw new Error('Nenhum registro válido foi encontrado nas abas selecionadas. Verifique se elas possuem as colunas Material, SKU, Lote, Data Validade e Saldo Atual.');
+ DB=rows;document.getElementById('saveHtml').disabled=false;product.innerHTML='<option value="Todos">Todos os produtos</option>'+[...new Set(DB.map(d=>d.grupo))].map(n=>`<option value="${n}">${n}</option>`).join('');product.value='Todos';month.value='Todos';search.value='';draw();status.className='status ok';status.textContent=`Importação concluída: ${rows.length} lotes importados de ${selected.length} aba(s): ${selected.join(', ')}.`;
+ }catch(err){status.className='status error';status.textContent=err.message||'Erro ao importar as abas selecionadas.'}
+});
+[product,month,search].forEach(el=>el.addEventListener('input',draw));
+if(Array.isArray(SAVED_DATA)&&SAVED_DATA.length){
+ DB=SAVED_DATA.map(d=>({...d,validade:new Date(d.validade)}));
+ document.getElementById('saveHtml').disabled=false;
+ product.innerHTML='<option value="Todos">Todos os produtos</option>'+[...new Set(DB.map(d=>d.grupo))].map(n=>`<option value="${n}">${n}</option>`).join('');
+ status.className='status ok';status.textContent=`Dashboard carregado com ${DB.length} lotes salvos no HTML.`;
+}
+draw();
+</script></body></html>
