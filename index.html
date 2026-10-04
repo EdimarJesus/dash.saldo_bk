@@ -24,20 +24,493 @@ button,.filebtn{border:0;border-radius:10px;padding:11px 16px;font-weight:750;fo
 .controls{display:flex;gap:12px;flex-wrap:wrap;margin:16px 0}.controls label{font-size:12px;font-weight:700;color:#667892;display:flex;flex-direction:column;gap:6px}.controls select,.controls input{border:1px solid #ccd8e6;border-radius:10px;padding:10px 12px;background:#fff;color:var(--ink);min-width:190px;font-size:13px}
 .chart{width:100%;height:auto;display:block;overflow:visible}.gridline{stroke:#e2eaf2;stroke-width:1}.axis{font-size:12px;fill:#667892}.month{font-size:12px;fill:#183153;font-weight:650}.barlabel{font-size:11px;font-weight:800}.legend{display:flex;gap:22px;flex-wrap:wrap;font-size:13px;font-weight:700;color:#5e718b;margin:10px 0 0}.dot{width:11px;height:11px;border-radius:50%;display:inline-block;margin-right:7px}
 .tablewrap{overflow:auto}table{border-collapse:collapse;width:100%;font-size:13px}th{text-align:left;color:#63758d;background:#f5f8fc;font-size:11px;text-transform:uppercase;letter-spacing:.04em}td,th{padding:12px 13px;border-bottom:1px solid #e7edf4}td.num,th.num{text-align:right;font-variant-numeric:tabular-nums}.totalrow td{font-weight:850;background:#f8fafc}.pill{display:inline-block;padding:4px 9px;border-radius:20px;background:#edf4fd;color:#1a5c9f;font-weight:750;font-size:11px}
-.footer{text-align:center;color:#8290a4;font-size:11px;padding:20px 0 4px}
+.data-section,.data-cards{display:none}.data-section.visible{display:block}.data-cards.visible{display:grid}.footer{text-align:center;color:#8290a4;font-size:11px;padding:20px 0 4px}
+.kpi-note{font-size:11px;color:#8290a4;margin-top:4px}.warning-card{border-left-color:#d9822b}.warning-card .value{color:#d9822b}.ok-card{border-left-color:#14804b}.ok-card .value{color:#14804b}
+.statusbox{padding:14px 16px;border-radius:12px;background:#f7f9fc;border:1px solid #e2eaf2;color:#667892;font-size:13px}.statusbox strong{color:#183153}.mutedrow{color:#8290a4}
+
 @media(max-width:850px){.wrap{padding:14px}header{padding:22px;align-items:flex-start;flex-direction:column}.brand{text-align:left}h1{font-size:24px}.cards{grid-template-columns:1fr}.panel{padding:20px 16px}}
 @media print{body{background:#fff}.wrap{max-width:none;padding:10px}header,.card,.panel{box-shadow:none;break-inside:avoid}.controls,.import{display:none}}
-</style></head>
+</style>
+<style>
+.cards{grid-template-columns:repeat(3,minmax(0,1fr))}
+.expiry-summary{border-left-color:#ff970f}
+.expiry-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:4px}
+.expiry-label{font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.5px;color:#526987;margin-bottom:4px}
+.warning-value{color:#d98219!important}
+.danger-value{color:#0b8a4b!important}
+.ok-value{color:#0b8a4b!important}
+.expiry-grid .mini{margin-top:2px}
+@media(max-width:800px){.cards{grid-template-columns:1fr}.expiry-grid{grid-template-columns:1fr}}
+</style>
+
+<style>
+.data-cards.visible{
+  display:grid !important;
+  grid-template-columns:repeat(3,minmax(0,1fr)) !important;
+  gap:16px;
+  width:100%;
+}
+@media(max-width:850px){
+  .data-cards.visible{grid-template-columns:1fr !important;}
+}
+</style>
+
+<style>
+.chart-bars{margin:18px 0 22px;padding:18px 18px 14px;border:1px solid #e2eaf2;border-radius:14px;background:#fbfcfe}
+.chart-bars-title{font-size:12px;font-weight:800;color:#526987;text-transform:uppercase;letter-spacing:.05em;margin-bottom:14px}
+.chart-bar-row{display:grid;grid-template-columns:minmax(150px,1.4fr) minmax(160px,4fr) 90px;align-items:center;gap:12px;margin:10px 0}
+.chart-bar-label{font-size:12px;color:#183153;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chart-bar-track{height:22px;background:#edf2f7;border-radius:999px;overflow:hidden}
+.chart-bar-fill{height:100%;border-radius:999px;min-width:2px}
+.chart-bar-value{font-size:12px;font-weight:800;text-align:right;color:#183153}
+.chart-axis-note{font-size:11px;color:#8290a4;margin-top:10px}
+.chart-bars.scroll{max-height:520px;overflow:auto}
+.chart-date-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:10px;align-items:end}
+.chart-date-item{min-width:0}
+.chart-date-bar-wrap{height:170px;display:flex;align-items:flex-end;background:#f3f6fa;border-radius:9px 9px 4px 4px;overflow:hidden}
+.chart-date-bar{width:100%;border-radius:8px 8px 0 0;min-height:2px}
+.chart-date-value{text-align:center;font-size:11px;font-weight:800;color:#183153;margin-top:5px}
+.chart-date-label{text-align:center;font-size:10px;color:#62738b;margin-top:5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.chart-legend{display:flex;gap:18px;flex-wrap:wrap;margin-top:12px;font-size:11px;color:#526987}
+.chart-legend span{display:inline-flex;align-items:center;gap:6px}
+.chart-dot{width:9px;height:9px;border-radius:50%;display:inline-block}
+@media(max-width:700px){.chart-bar-row{grid-template-columns:1fr;gap:5px}.chart-bar-value{text-align:left}.chart-date-grid{grid-template-columns:repeat(2,1fr)}}
+</style>
+
+<style>
+.manufacture-grouped{grid-template-columns:repeat(7,minmax(80px,1fr));gap:12px}
+.manufacture-grouped .chart-date-item{min-width:0}
+.manufacture-values{display:grid;grid-template-columns:1fr 1fr;gap:4px;text-align:center;margin-bottom:5px}
+.manufacture-value{font-size:10px;font-weight:800;overflow:hidden;text-overflow:ellipsis}
+.ketchup-value{color:#fa0000}
+.mustard-value{color:#ff970f}
+.manufacture-bars{height:190px;display:grid;grid-template-columns:1fr 1fr;align-items:end;gap:5px}
+.manufacture-bars .chart-date-bar-wrap{height:170px;display:flex;align-items:flex-end;background:#f3f6fa;border-radius:8px 8px 3px 3px;overflow:hidden}
+.manufacture-bars .chart-date-bar{width:100%;border-radius:7px 7px 0 0;min-height:1px}
+@media(max-width:1100px){.manufacture-grouped{grid-template-columns:repeat(5,minmax(80px,1fr))}}
+@media(max-width:800px){.manufacture-grouped{grid-template-columns:repeat(3,minmax(75px,1fr))}}
+@media(max-width:520px){.manufacture-grouped{grid-template-columns:repeat(2,minmax(75px,1fr))}}
+</style>
+
+<style>
+.manufacture-chart-wrap{width:100%;height:420px;margin-top:10px;overflow:hidden}
+.manufacture-svg{width:100%;height:100%;display:block}
+.manufacture-gridline{stroke:#e3eaf2;stroke-width:1}
+.manufacture-axis{stroke:#8fa2b8;stroke-width:1.3}
+.manufacture-axis-y,.manufacture-axis-x{fill:#62738b;font-size:10px}
+.manufacture-axis-title{fill:#526987;font-size:11px;font-weight:800}
+@media(max-width:700px){.manufacture-chart-wrap{height:360px}}
+</style>
+
+<style>
+.manufacture-two-charts{display:grid;grid-template-columns:1fr;gap:26px}
+.manufacture-single{border:1px solid #e3eaf2;border-radius:12px;padding:14px 14px 8px;background:#fff}
+.manufacture-single-title{font-size:12px;font-weight:850;text-transform:uppercase;letter-spacing:.05em;margin:0 0 4px;color:#526987}
+.manufacture-single:first-child .manufacture-single-title{color:#fa0000}
+.manufacture-single:nth-child(2) .manufacture-single-title{color:#ff970f}
+.manufacture-chart-wrap{width:100%;height:330px;overflow:hidden}
+.manufacture-svg{width:100%;height:100%;display:block}
+.manufacture-gridline{stroke:#e3eaf2;stroke-width:1}
+.manufacture-axis{stroke:#8fa2b8;stroke-width:1.3}
+.manufacture-axis-y,.manufacture-axis-x{fill:#62738b;font-size:10px}
+.manufacture-axis-title{fill:#526987;font-size:11px;font-weight:800}
+.chart-empty{padding:30px;color:#8290a4;text-align:center}
+@media(max-width:700px){.manufacture-chart-wrap{height:290px}}
+</style>
+
+<style>
+.manufacture-value-label{font-size:10px;font-weight:850;pointer-events:none}
+</style>
+
+<style>
+.data-toggle{margin:12px 0 4px;padding:8px 14px;border:1px solid #d5e0ec;border-radius:8px;background:#f6f9fc;font-size:11px;font-weight:800;cursor:pointer}
+.ketchup-toggle{color:#fa0000;border-color:#f5b8b8}
+.mustard-toggle{color:#d98219;border-color:#f3cf9d}
+.manufacture-data{margin-top:8px}
+.manufacture-data[hidden]{display:none}
+</style>
+
+<style>
+.manufacture-data .total-row td{border-top:2px solid #b8c7d8;background:#f1f5f9;font-weight:900}
+.manufacture-data .total-row td:first-child{color:#183153}
+</style>
+
+<style>
+.expiry-chart-wrap{width:100%;height:390px;overflow:hidden}
+.expiry-svg{width:100%;height:100%;display:block}
+.expiry-gridline{stroke:#e3eaf2;stroke-width:1}
+.expiry-axis{stroke:#8fa2b8;stroke-width:1.3}
+.expiry-axis-y,.expiry-axis-x{fill:#62738b;font-size:10px}
+.expiry-axis-title{fill:#526987;font-size:11px;font-weight:800}
+.expiry-value-label{font-size:10px;font-weight:850;pointer-events:none}
+.alert-empty{padding:28px 20px;border:1px solid #dbe5ef;border-radius:10px;background:#f7fafc;text-align:center}
+.alert-empty-title{font-size:15px;font-weight:900;color:#183153}
+.alert-empty-text{margin-top:6px;font-size:12px;color:#62738b}
+.alert-status{font-size:10px;color:#62738b;margin:-5px 0 7px 0;padding-left:0}
+@media(max-width:700px){.expiry-chart-wrap{height:330px}}
+</style>
+
+<style>
+.monthly-toggle{
+  margin:16px 0 0;
+  color:#1760aa;
+  border-color:#cbdceb;
+}
+.monthly-data-section[hidden]{display:none}
+</style>
+
+<style>
+.expiry-alert-filters{
+ display:flex;
+ align-items:flex-end;
+ flex-wrap:wrap;
+ gap:12px;
+ margin:14px 0 18px;
+ padding:14px;
+ border:1px solid #dfe7ef;
+ border-radius:10px;
+ background:#f8fafc;
+}
+.expiry-alert-filters label{
+ display:flex;
+ flex-direction:column;
+ gap:5px;
+ font-size:11px;
+ font-weight:800;
+ color:#526987;
+}
+.expiry-alert-filters select,
+.expiry-alert-filters input{
+ min-width:145px;
+ height:38px;
+ padding:0 10px;
+ border:1px solid #cbd9e7;
+ border-radius:8px;
+ background:#fff;
+ color:#183153;
+}
+.expiry-alert-filters input{min-width:150px}
+@media(max-width:700px){
+ .expiry-alert-filters{align-items:stretch}
+ .expiry-alert-filters label,.expiry-alert-filters select,.expiry-alert-filters input,.expiry-alert-filters button{width:100%}
+}
+</style>
+
+<style>
+.custom-expiry-controls[hidden]{display:none}
+.custom-expiry-controls{display:flex;align-items:flex-end;gap:12px;flex-wrap:wrap}
+.expiry-action-buttons{display:flex;align-items:flex-end;gap:8px;height:38px}
+.expiry-action{
+ height:38px;
+ padding:0 16px;
+ border-radius:8px;
+ border:1px solid #c7d7e7;
+ font-size:11px;
+ font-weight:850;
+ cursor:pointer;
+ white-space:nowrap;
+ transition:.15s ease;
+}
+.expiry-action.primary{
+ background:#173f7a;
+ color:#fff;
+ border-color:#173f7a;
+ box-shadow:0 2px 5px rgba(23,63,122,.18);
+}
+.expiry-action.primary:hover{background:#0f3265}
+.expiry-action.secondary{
+ background:#fff;
+ color:#173f7a;
+ border-color:#b8cbe0;
+}
+.expiry-action.secondary:hover{background:#f2f7fc}
+.expiry-alert-filters{align-items:flex-end}
+@media(max-width:700px){
+ .custom-expiry-controls{width:100%;align-items:stretch}
+ .custom-expiry-controls label,.expiry-action-buttons{width:100%}
+ .expiry-action-buttons{height:auto}
+ .expiry-action{flex:1}
+}
+</style>
+
+<style>
+/* Filtros de vencimento: período + datas + ações */
+.custom-expiry-controls{
+  display:flex !important;
+  align-items:flex-end;
+  gap:12px;
+  flex-wrap:nowrap;
+}
+.custom-expiry-controls[hidden]{display:none !important}
+.custom-expiry-controls label{
+  display:flex;
+  flex-direction:column;
+  gap:5px;
+  width:auto !important;
+}
+.custom-expiry-controls input{
+  width:150px !important;
+  min-width:150px !important;
+  box-sizing:border-box;
+}
+.expiry-action-buttons{
+  display:flex !important;
+  align-items:flex-end;
+  gap:8px;
+  height:38px;
+  flex:0 0 auto;
+}
+.expiry-action{
+  display:inline-flex !important;
+  align-items:center;
+  justify-content:center;
+  height:38px;
+  min-width:120px;
+  box-sizing:border-box;
+}
+@media(max-width:700px){
+  .custom-expiry-controls{
+    flex-wrap:wrap;
+    width:100%;
+  }
+  .custom-expiry-controls label{
+    width:100% !important;
+  }
+  .custom-expiry-controls input{
+    width:100% !important;
+  }
+  .expiry-action-buttons{
+    width:100%;
+  }
+  .expiry-action{
+    flex:1;
+  }
+}
+</style>
+
+<style>
+.date-input-wrap{
+  position:relative;
+  display:flex;
+  align-items:center;
+  width:150px;
+}
+.date-input-wrap input{
+  width:150px !important;
+  min-width:150px !important;
+  padding-right:36px !important;
+  cursor:pointer;
+}
+.date-input-wrap input::-webkit-calendar-picker-indicator{
+  opacity:0;
+  position:absolute;
+  right:8px;
+  width:24px;
+  height:24px;
+  cursor:pointer;
+}
+.calendar-button{
+  position:absolute;
+  right:4px;
+  top:4px;
+  width:30px;
+  height:30px;
+  padding:0;
+  border:0;
+  border-radius:6px;
+  background:transparent;
+  color:#173f7a;
+  font-size:15px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+.calendar-button:hover{background:#edf4fb}
+@media(max-width:700px){
+ .date-input-wrap,.date-input-wrap input{width:100% !important}
+}
+</style>
+
+<style>
+.date-input-wrap{
+  position:relative;
+  display:flex;
+  align-items:center;
+  width:150px;
+}
+.date-input-wrap input{
+  width:150px !important;
+  min-width:150px !important;
+  height:38px !important;
+  box-sizing:border-box;
+  cursor:pointer;
+}
+.date-input-wrap input::-webkit-calendar-picker-indicator{
+  opacity:1 !important;
+  display:block !important;
+  width:18px;
+  height:18px;
+  cursor:pointer;
+}
+@media(max-width:700px){
+ .date-input-wrap,.date-input-wrap input{width:100% !important}
+}
+</style>
+
+<style>
+/* Ícone de calendário alinhado à identidade azul do dashboard */
+.date-input-wrap{
+  position:relative;
+  display:flex;
+  align-items:center;
+  width:150px;
+}
+.date-input-wrap::after{
+  content:"";
+  position:absolute;
+  right:10px;
+  top:50%;
+  width:18px;
+  height:18px;
+  transform:translateY(-50%);
+  pointer-events:none;
+  background-repeat:no-repeat;
+  background-position:center;
+  background-size:18px 18px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='18' height='18' viewBox='0 0 24 24' fill='none' stroke='%23173f7a' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3' y='4' width='18' height='17' rx='2'/%3E%3Cline x1='16' y1='2' x2='16' y2='6'/%3E%3Cline x1='8' y1='2' x2='8' y2='6'/%3E%3Cline x1='3' y1='10' x2='21' y2='10'/%3E%3C/svg%3E");
+}
+.date-input-wrap input{
+  width:150px !important;
+  min-width:150px !important;
+  height:38px !important;
+  box-sizing:border-box;
+  padding-right:36px !important;
+  cursor:pointer;
+}
+.date-input-wrap input::-webkit-calendar-picker-indicator{
+  opacity:0 !important;
+  width:30px;
+  height:30px;
+  cursor:pointer;
+}
+.date-input-wrap:focus-within::after{
+  filter:brightness(.82);
+}
+@media(max-width:700px){
+  .date-input-wrap,.date-input-wrap input{width:100% !important}
+}
+</style>
+
+<style>
+.detail-filters{
+ display:flex;
+ align-items:flex-end;
+ flex-wrap:wrap;
+ gap:12px;
+ margin:14px 0 18px;
+ padding:14px;
+ border:1px solid #dfe7ef;
+ border-radius:10px;
+ background:#f8fafc;
+}
+.detail-filters label{
+ display:flex;
+ flex-direction:column;
+ gap:5px;
+ font-size:11px;
+ font-weight:800;
+ color:#526987;
+}
+.detail-filters input,
+.detail-filters select{
+ height:38px;
+ min-width:180px;
+ box-sizing:border-box;
+ padding:0 10px;
+ border:1px solid #cbd9e7;
+ border-radius:8px;
+ background:#fff;
+ color:#183153;
+}
+.detail-filters input{min-width:220px}
+.detail-clear{
+ height:38px;
+ padding:0 16px;
+ border-radius:8px;
+ border:1px solid #b8cbe0;
+ background:#fff;
+ color:#173f7a;
+ font-size:11px;
+ font-weight:850;
+ cursor:pointer;
+}
+.detail-clear:hover{background:#f0f6fc}
+@media(max-width:700px){
+ .detail-filters label,.detail-filters input,.detail-filters select,.detail-clear{width:100%;min-width:0}
+}
+</style>
+
+<style>
+#detailTableWrap[hidden]{display:none !important}
+</style>
+</head>
 <body><div class="wrap">
 <header><div><div class="kicker">INOV CARGO · CONTROLE DE REVISÃO</div><h1>Estoque disponível para Revisão BK</h1><div class="sub" id="subtitle">Importe a planilha Excel para atualizar os dados do dashboard.</div></div><div class="brand">REVISÃO BK<span>Inov Cargo</span></div></header>
 <section class="import"><div><strong>Atualização por planilha Excel</strong><small>Selecione o arquivo .xlsx e escolha uma ou mais abas para importar.</small><div id="status" class="status">Aguardando importação da planilha.</div></div><div class="actions"><label class="filebtn" for="file">▣ Selecionar Excel</label><input id="file" type="file" accept=".xlsx,.xls"><button id="saveHtml" class="secondary" onclick="saveUpdatedHtml()" disabled>Salvar HTML atualizado</button><button class="secondary" onclick="window.print()">Imprimir / salvar PDF</button></div><div id="sheetPicker" class="sheet-picker"><div class="sheet-title">Selecione as abas que deseja importar:</div><div id="sheetList" class="sheet-list"></div><button id="importSheets" class="import-btn">Importar abas selecionadas</button></div></section>
-<section class="cards" id="cards"><div class="card total"><div class="label">Total geral para revisar</div><div class="value" id="totalAll">—</div><div class="mini">Soma dos produtos identificados pelo SKU</div></div></section>
-<section class="panel"><h2>Vencimentos por mês</h2><p class="hint">Quantidade de caixas por mês de validade, classificada pela coluna SKU. Selecione um produto para detalhar.</p>
+<section class="cards data-cards" id="cards"></section>
+<section class="cards data-cards" id="cardsExtra"></section>
+<section class="panel data-section"><h2>Estoque por SKU</h2><p class="hint">Consolidação da mesma base por SKU, mostrando quantidade, lotes e as datas mais antiga de fabricação e validade.</p><div id="skuChart" class="chart-bars"></div><div class="tablewrap"><table><thead><tr><th>SKU</th><th>Produto</th><th class="num">Lotes</th><th class="num">Caixas</th><th>Fabricação mais antiga</th><th>Validade mais próxima</th></tr></thead><tbody id="skuBody"><tr><td colspan="6">Importe uma planilha para visualizar os dados.</td></tr></tbody></table></div></section>
+<section class="panel data-section"><h2>Estoque por data de fabricação</h2><p class="hint">Quantidade de caixas agrupada pela data de fabricação extraída do código do lote.</p><div id="manufactureChart" class="chart-bars chart-wide"></div></section>
+<section class="panel data-section"><h2>Vencimentos por mês</h2><div id="expiryChart" class="chart-bars chart-wide"></div><p class="hint">Consulte os lotes conforme o período de vencimento selecionado.</p>
+<div class="expiry-alert-filters">
+  <label>Período
+    <select id="expiryPreset">
+      <option value="30">30 dias</option>
+      <option value="60">60 dias</option>
+      <option value="90" selected>90 dias</option>
+      <option value="120">120 dias</option>
+      <option value="150">150 dias</option>
+      <option value="180">180 dias</option>
+      <option value="custom">Personalizado</option>
+    </select>
+  </label>
+  <div id="customExpiryControls" class="custom-expiry-controls" hidden>
+    <label>Data inicial
+      <div class="date-input-wrap"><input id="expiryStartDate" type="date" aria-label="Data inicial" onclick="openDatePicker('expiryStartDate')" onkeydown="if(event.key==='Enter'||event.key===' ')openDatePicker('expiryStartDate')"></div>
+    </label>
+    <label>Data final
+      <div class="date-input-wrap"><input id="expiryEndDate" type="date" aria-label="Data final" onclick="openDatePicker('expiryEndDate')" onkeydown="if(event.key==='Enter'||event.key===' ')openDatePicker('expiryEndDate')"></div>
+    </label>
+    <div class="expiry-action-buttons">
+      <button id="expiryApplyDate" type="button" class="expiry-action primary">Aplicar período</button>
+      <button id="expiryClearDate" type="button" class="expiry-action secondary">Limpar datas</button>
+    </div>
+  </div>
+</div>
+<div id="lotChart" class="chart-bars chart-wide"></div><div class="tablewrap"><table><thead><tr><th>Produto</th><th>Lote</th><th>Fabricação</th><th>Validade</th><th class="num">Saldo (cx)</th><th>Status</th></tr></thead><tbody id="expiryBody"><tr><td colspan="6">Importe uma planilha para visualizar os dados.</td></tr></tbody></table></div></section>
+<section class="panel data-section"><h2>Rastreamento histórico</h2><p class="hint">A base atual é uma fotografia do estoque. Por isso, estes indicadores ainda não podem ser calculados sem histórico de importações.</p><div class="statusbox"><strong>Histórico ainda não disponível.</strong><br>Quando começarmos a guardar as posições importadas por data, esta mesma tela poderá calcular entrada de cada lote, quantidade que saiu, movimentação por período e evolução semanal do estoque, sem alterar a base operacional atual.</div></section>
+<section class="panel data-section"><h2>Vencimentos por mês</h2><p class="hint">Quantidade de caixas por mês de validade, classificada pela coluna SKU. Selecione um produto para detalhar.</p>
 <div class="controls"><label>Produto<select id="product"><option value="Todos">Todos os produtos</option><option value="Ketchup BK">Ketchup BK</option><option value="Mostarda BK">Mostarda BK</option></select></label><label>Mês de vencimento<select id="month"><option value="Todos">Todos os meses</option></select></label><label>Pesquisar lote ou material<input id="search" placeholder="Digite lote ou código"></label></div>
 <svg id="chart" class="chart" viewBox="0 0 1400 480" role="img" aria-label="Gráfico de vencimentos por mês"></svg><div class="legend" id="legend"></div>
+<button id="monthlyDataToggle" class="data-toggle monthly-toggle" type="button" onclick="toggleMonthlyData()">▸ Mostrar dados</button>
 </section>
-<section class="panel"><h2>Resumo mensal de vencimentos</h2><p class="hint">Totais de saldo por mês, considerando a data de validade da base.</p><div class="tablewrap"><table><thead id="monthlyHead"><tr><th>Mês de vencimento</th><th class="num">Total mensal (cx)</th></tr></thead><tbody id="monthlyBody"><tr><td colspan="2">Importe uma planilha para visualizar os dados.</td></tr></tbody></table></div></section>
-<section class="panel"><h2>Detalhamento por lote</h2><p class="hint">Lista dos saldos que compõem os totais, com filtro por produto, mês e pesquisa.</p><div class="tablewrap"><table><thead><tr><th>Produto (SKU)</th><th>Material</th><th>Lote</th><th>Validade</th><th class="num">Saldo (cx)</th></tr></thead><tbody id="detailBody"><tr><td colspan="5">Nenhum dado importado.</td></tr></tbody></table></div></section>
+<section id="monthlyDataSection" class="panel data-section monthly-data-section" hidden><h2>Resumo mensal de vencimentos</h2><p class="hint">Totais de saldo por mês, considerando a data de validade da base.</p><div class="tablewrap"><table><thead id="monthlyHead"><tr><th>Mês de vencimento</th><th class="num">Total mensal (cx)</th></tr></thead><tbody id="monthlyBody"><tr><td colspan="2">Importe uma planilha para visualizar os dados.</td></tr></tbody></table></div></section>
+<section class="panel data-section"><h2>Detalhamento por lote</h2>
+<p class="hint">Lista dos saldos por lote. Use os filtros para localizar rapidamente um lote, SKU ou validade específica.</p>
+<div class="detail-filters">
+  <label>Lote
+    <input id="detailLotFilter" type="search" placeholder="Digite o lote">
+  </label>
+  <label>SKU
+    <select id="detailSkuFilter"><option value="Todos">Todos os SKUs</option></select>
+  </label>
+  <label>Validade
+    <select id="detailValidityFilter"><option value="Todos">Todas as validades</option></select>
+  </label>
+  <button id="detailClearFilters" type="button" class="detail-clear">Limpar filtros</button>
+</div>
+<div id="detailTableWrap" class="tablewrap" hidden><table><thead><tr><th>Produto (SKU)</th><th>Material</th><th>Lote</th><th>Fabricação</th><th>Validade</th><th class="num">Saldo (cx)</th></tr></thead><tbody id="detailBody"></tbody></table></div></section>
 <div class="footer">Dashboard desenvolvido para acompanhamento operacional · INOV CARGO</div></div>
 <script>
 let DB=[];
@@ -48,14 +521,27 @@ const product=document.getElementById('product'),month=document.getElementById('
 const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm=s=>String(s??'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').toLowerCase().replace(/\s+/g,' ').trim();
 function dateValue(v){
- if(v instanceof Date&&!isNaN(v))return v;
+ if(v instanceof Date&&!isNaN(v.getTime()))return v;
+ if(v&&Object.prototype.toString.call(v)==='[object Date]'&&!isNaN(new Date(v).getTime()))return new Date(v);
  if(typeof v==='number'&&window.XLSX){const p=XLSX.SSF.parse_date_code(v);if(p)return new Date(p.y,p.m-1,p.d,12)}
  let s=String(v??'').trim();let m=s.match(/^(\d{1,2})[\/.-](\d{1,2})[\/.-](\d{4})$/);if(m)return new Date(+m[3],+m[2]-1,+m[1],12);
  let d=new Date(s);return isNaN(d)?null:d;
 }
-function monthKey(d){return `${String(d.getMonth()+1).padStart(2,'0')}/${d.getFullYear()}`}
+function asDate(v){if(v instanceof Date&&!isNaN(v.getTime()))return v;const d=new Date(v);return isNaN(d.getTime())?null:d}
+function monthKey(d){const x=asDate(d);return x?`${String(x.getMonth()+1).padStart(2,'0')}/${x.getFullYear()}`:''}
 function monthLabel(k){let [m,y]=k.split('/');return `${monthsPt[+m-1]}/${y}`}
 function findCol(headers,patterns){return headers.findIndex(h=>patterns.some(p=>norm(h).includes(norm(p))))}
+function manufactureDateFromLot(lote){
+ const s=String(lote??'').trim().toUpperCase();
+ const m=s.match(/^[A-Z]{2}(\d{3})(\d{2})/);
+ if(!m)return null;
+ const day=Number(m[1]), yy=Number(m[2]);
+ if(day<1||day>366)return null;
+ const d=new Date(2000+yy,0,1,12); d.setDate(day-1);
+ return d;
+}
+function daysUntil(d){const targetDate=asDate(d);if(!targetDate)return Infinity;const now=new Date();const today=new Date(now.getFullYear(),now.getMonth(),now.getDate(),12);const target=new Date(targetDate.getFullYear(),targetDate.getMonth(),targetDate.getDate(),12);return Math.ceil((target-today)/86400000)}
+function expiryStatus(d){const days=daysUntil(d);if(days<0)return {label:'Vencido',cls:'pill',days};if(days<=30)return {label:`Vence em ${days} dias`,cls:'pill',days};if(days<=60)return {label:`Vence em ${days} dias`,cls:'pill',days};if(days<=90)return {label:`Vence em ${days} dias`,cls:'pill',days};return {label:'Mais de 90 dias',cls:'pill',days}}
 function classifySku(sku){
  const s=norm(sku);
  if(s.includes('ketchup')||s.includes('catchup'))return 'Ketchup BK';
@@ -65,25 +551,356 @@ function classifySku(sku){
 function parseSheet(wb,sheetName){
  const ws=wb.Sheets[sheetName];if(!ws)return [];
  const rows=XLSX.utils.sheet_to_json(ws,{header:1,defval:null,raw:true});
- let hi=rows.findIndex(r=>r.some(c=>norm(c)==='material')&&r.some(c=>norm(c)==='sku')&&r.some(c=>norm(c).includes('validade'))&&r.some(c=>norm(c).includes('saldo')));
- if(hi<0)hi=rows.findIndex(r=>r.some(c=>norm(c)==='sku')&&r.some(c=>norm(c).includes('validade'))&&r.some(c=>norm(c).includes('saldo')));
+ let hi=rows.findIndex(r=>r.some(c=>norm(c)==='material')&&r.some(c=>norm(c).includes('validade'))&&r.some(c=>norm(c).includes('saldo')));
  if(hi<0)hi=0;
  const headers=(rows[hi]||[]).map(x=>String(x??''));
- const material=findCol(headers,['material']), sku=findCol(headers,['sku']), lot=findCol(headers,['lote']);
+ const material=findCol(headers,['material']);
  const valid=headers.findIndex(h=>norm(h).includes('validade'));
  const saldo=findCol(headers,['saldo atual','saldo']);
- if(material<0||sku<0||lot<0||valid<0||saldo<0)throw new Error(`A aba "${sheetName}" precisa conter as colunas Material, SKU, Lote, Data Validade e Saldo Atual.`);
+ if(material<0||valid<0||saldo<0)throw new Error(`A aba "${sheetName}" precisa conter as colunas Material, Data Validade e Saldo Atual.`);
+ let sku=findCol(headers,['sku']);
+ let lot=findCol(headers,['lote']);
+ const looksLikeLot=v=>/^\s*[A-Z]{2}\d{3}\d{2}[A-Z0-9]+/i.test(String(v??''));
+ // Algumas bases têm duas colunas chamadas "Lote": uma contém a descrição/SKU e a outra o lote real.
+ if(lot>=0){
+   const candidates=headers.map((h,i)=>i).filter(i=>norm(headers[i]).includes('lote'));
+   const real=candidates.find(i=>rows.slice(hi+1,hi+8).some(r=>looksLikeLot(r[i])));
+   if(real!==undefined)lot=real;
+ }
+ if(lot<0)throw new Error(`A aba "${sheetName}" precisa conter uma coluna de Lote.`);
+ // Se não houver SKU explícito, usa a coluna descritiva (Texto Brv ou o outro "Lote") para identificar o produto.
+ if(sku<0){
+   const preferred=headers.findIndex(h=>['texto brv','descricao','descrição','produto'].includes(norm(h)));
+   if(preferred>=0)sku=preferred;
+   else {
+     const candidates=headers.map((h,i)=>i).filter(i=>norm(headers[i]).includes('lote')&&i!==lot);
+     sku=candidates.length?candidates[0]:-1;
+   }
+ }
+ if(sku<0)throw new Error(`A aba "${sheetName}" precisa conter SKU ou uma coluna descritiva do produto (SKU/Texto Brv/Produto).`);
  const result=[];
  for(const r of rows.slice(hi+1)){
-  const mat=String(r[material]??'').trim(), skuValue=String(r[sku]??'').trim(), lote=String(r[lot]??'').trim(), dt=dateValue(r[valid]), qty=Number(String(r[saldo]??'').replace(',','.'));
-  if(!mat||!skuValue||!lote||!dt||!Number.isFinite(qty)||qty<=0)continue;
-  result.push({material:mat,sku:skuValue,produto:skuValue,lote,validade:dt,mes:monthKey(dt),grupo:classifySku(skuValue),aba:sheetName,saldo:qty});
+  const mat=String(r[material]??'').trim(), skuValue=String(r[sku]??'').trim(), lote=String(r[lot]??'').trim(), dt=asDate(dateValue(r[valid])), qty=Number(String(r[saldo]??'').replace(',','.'));
+  if(!mat||!skuValue||!lote||!dt||!Number.isFinite(qty)||qty<=0||!looksLikeLot(lote))continue;
+  result.push({material:mat,sku:skuValue,produto:skuValue,lote,validade:dt,mes:monthKey(dt),fabricacao:manufactureDateFromLot(lote),grupo:classifySku(skuValue),aba:sheetName,saldo:qty});
  }
  return result;
 }
+function updateDetailFilterOptions(){
+ const skuEl=document.getElementById('detailSkuFilter');
+ const valEl=document.getElementById('detailValidityFilter');
+ if(!skuEl||!valEl)return;
+ const currentSku=skuEl.value, currentVal=valEl.value;
+ const skus=[...new Set(DB.map(d=>d.sku||d.produto).filter(Boolean))].sort((a,b)=>a.localeCompare(b,'pt-BR'));
+ const vals=[...new Set(DB.filter(d=>d.validade).map(d=>d.validade.toISOString().slice(0,10)))].sort();
+ skuEl.innerHTML='<option value="Todos">Todos os SKUs</option>'+skus.map(s=>`<option value="${esc(s)}">${esc(s)}</option>`).join('');
+ valEl.innerHTML='<option value="Todos">Todas as validades</option>'+vals.map(v=>{
+   const [y,m,d]=v.split('-');
+   return `<option value="${v}">${d}/${m}/${y}</option>`;
+ }).join('');
+ if(skus.includes(currentSku))skuEl.value=currentSku;
+ if(vals.includes(currentVal))valEl.value=currentVal;
+}
+function filteredDetail(){
+ const lot=norm(document.getElementById('detailLotFilter')?.value||'');
+ const sku=document.getElementById('detailSkuFilter')?.value||'Todos';
+ const validity=document.getElementById('detailValidityFilter')?.value||'Todos';
+ return DB.filter(d=>{
+   const dSku=d.sku||d.produto;
+   const dValidity=d.validade?d.validade.toISOString().slice(0,10):'';
+   return (!lot||norm(d.lote).includes(lot)) &&
+          (sku==='Todos'||dSku===sku) &&
+          (validity==='Todos'||dValidity===validity);
+ });
+}
+function renderDetailTable(){
+ const lot=norm(document.getElementById('detailLotFilter')?.value||'');
+ const sku=document.getElementById('detailSkuFilter')?.value||'Todos';
+ const validity=document.getElementById('detailValidityFilter')?.value||'Todos';
+ const active=!!lot || sku!=='Todos' || validity!=='Todos';
+ const wrap=document.getElementById('detailTableWrap');
+ const body=document.getElementById('detailBody');
+ if(!wrap||!body)return;
+ if(!active){
+   wrap.setAttribute('hidden','');
+   body.innerHTML='';
+   return;
+ }
+ wrap.removeAttribute('hidden');
+ const details=filteredDetail().slice().sort((a,b)=>a.validade-b.validade||a.grupo.localeCompare(b.grupo)||a.lote.localeCompare(b.lote));
+ if(!details.length){
+   body.innerHTML='<tr><td colspan="6">Nenhum registro encontrado com os filtros selecionados.</td></tr>';
+   return;
+ }
+ const rows=details.map(d=>`<tr><td><span class="pill">${esc(d.grupo)}</span></td><td>${esc(d.material)}</td><td>${esc(d.lote)}</td><td>${d.fabricacao?d.fabricacao.toLocaleDateString('pt-BR'):'Não identificada'}</td><td>${d.validade.toLocaleDateString('pt-BR')}</td><td class="num"><b>${fmt(d.saldo)}</b></td></tr>`).join('');
+ const total=details.reduce((a,d)=>a+d.saldo,0);
+ body.innerHTML=rows+`<tr class="totalrow"><td colspan="5">TOTAL FILTRADO</td><td class="num">${fmt(total)}</td></tr>`;
+}
 function filtered(){let p=product.value,m=month.value,q=norm(search.value);return DB.filter(d=>(p==='Todos'||d.grupo===p)&&(m==='Todos'||d.mes===m)&&(!q||norm(d.lote).includes(q)||norm(d.material).includes(q)||norm(d.produto).includes(q)))}
 function palette(i,name){const n=norm(name);if(n==='ketchup bk'||n.includes('ketchup'))return '#fa0000';if(n==='mostarda bk'||n.includes('mostarda')||n.includes('mustard'))return '#ff970f';return ['#1760aa','#16a085','#8e44ad','#d35400','#2c3e50','#27ae60'][i%6]}
+
+function chartColor(group){
+ const n=norm(group);
+ if(n.includes('ketchup'))return '#fa0000';
+ if(n.includes('mostarda')||n.includes('mustard'))return '#ff970f';
+ return '#1760aa';
+}
+function renderSkuChart(){
+ const map=new Map();
+ DB.forEach(d=>{const k=d.sku||d.produto;if(!map.has(k))map.set(k,{sku:k,saldo:0,grupo:d.grupo,lotes:new Set()});const x=map.get(k);x.saldo+=d.saldo;x.lotes.add(d.lote);});
+ const rows=[...map.values()].sort((a,b)=>b.saldo-a.saldo);
+ const max=Math.max(1,...rows.map(x=>x.saldo));
+ document.getElementById('skuChart').innerHTML=`<div class="chart-bars-title">Caixas por SKU</div>`+
+ rows.map(x=>`<div class="chart-bar-row"><div class="chart-bar-label" title="${esc(x.sku)}">${esc(x.sku)}</div><div class="chart-bar-track"><div class="chart-bar-fill" style="width:${(x.saldo/max*100).toFixed(2)}%;background:${chartColor(x.grupo)}"></div></div><div class="chart-bar-value">${fmt(x.saldo)} cx</div></div>`).join('')+
+ `<div class="chart-axis-note">Total de caixas por SKU. A cor identifica o produto.</div>`;
+}
+function renderManufactureChart(){
+ function buildChart(rows,label,color,tableId){
+  if(!rows.length)return `<div class="manufacture-single"><div class="manufacture-single-title">${label}</div><div class="chart-empty">Sem dados para ${label}.</div></div>`;
+  const maxData=Math.max(1,...rows.map(x=>x.saldo));
+  const step=Math.max(100,Math.ceil(maxData/5/100)*100);
+  const yMax=Math.max(step*5,maxData);
+  const W=1400,H=390,L=72,R=24,T=24,B=68,PH=H-T-B,PW=W-L-R;
+  const xStep=PW/Math.max(1,rows.length);
+  const barW=Math.max(5,Math.min(16,xStep*.42));
+  let svg=`<svg class="manufacture-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" aria-label="${label} por data de fabricação">`;
+  for(let i=0;i<=5;i++){
+   const v=i*step,y=T+PH-(v/yMax)*PH;
+   svg+=`<line x1="${L}" y1="${y}" x2="${W-R}" y2="${y}" class="manufacture-gridline"/>`;
+   svg+=`<text x="${L-10}" y="${y+4}" text-anchor="end" class="manufacture-axis-y">${fmt(v)}</text>`;
+  }
+  svg+=`<line x1="${L}" y1="${T+PH}" x2="${W-R}" y2="${T+PH}" class="manufacture-axis"/><line x1="${L}" y1="${T}" x2="${L}" y2="${T+PH}" class="manufacture-axis"/>`;
+  const every=Math.max(1,Math.ceil(rows.length/16));
+  rows.forEach((x,i)=>{
+   const cx=L+xStep*(i+.5),h=x.saldo/yMax*PH,xPos=cx-barW/2,barY=T+PH-h;
+   svg+=`<rect x="${xPos}" y="${barY}" width="${barW}" height="${h}" rx="3" fill="${color}"><title>${x.date.toLocaleDateString('pt-BR')} · ${label}: ${fmt(x.saldo)} caixas</title></rect>`;
+   if(x.saldo>0){
+    const valueY=Math.max(T+12,barY-7);
+    svg+=`<text x="${cx}" y="${valueY}" text-anchor="middle" class="manufacture-value-label" fill="${color}">${fmt(x.saldo)}</text>`;
+   }
+   if(i%every===0||i===rows.length-1){
+    const lab=x.date.toLocaleDateString('pt-BR',{day:'2-digit',month:'2-digit'});
+    svg+=`<text x="${cx}" y="${H-40}" text-anchor="middle" class="manufacture-axis-x">${lab}</text>`;
+   }
+  });
+  svg+=`<text x="${(L+W-R)/2}" y="${H-10}" text-anchor="middle" class="manufacture-axis-title">Data de fabricação</text>`;
+  svg+=`<text x="16" y="${T+PH/2}" text-anchor="middle" transform="rotate(-90 16 ${T+PH/2})" class="manufacture-axis-title">Quantidade de caixas</text></svg>`;
+
+  const tableRows=rows.map(x=>`<tr><td>${x.date.toLocaleDateString('pt-BR')}</td><td class="num">${fmt(x.saldo)}</td></tr>`).join('');
+  const tableTotal=rows.reduce((sum,x)=>sum+x.saldo,0);
+  return `<div class="manufacture-single">
+    <div class="manufacture-single-title">${label}</div>
+    <div class="manufacture-chart-wrap">${svg}</div>
+    <button class="data-toggle ${label.includes('Ketchup')?'ketchup-toggle':'mustard-toggle'}" type="button" onclick="toggleManufactureData('${tableId}',this)">▸ Mostrar dados</button>
+    <div id="${tableId}" class="manufacture-data" hidden>
+      <div class="tablewrap"><table><thead><tr><th>Data de fabricação</th><th class="num">Caixas</th></tr></thead><tbody>${tableRows}<tr class="total-row"><td><b>TOTAL</b></td><td class="num"><b>${fmt(tableTotal)}</b></td></tr></tbody></table></div>
+    </div>
+  </div>`;
+ }
+ const maps={ketchup:new Map(),mostarda:new Map()};
+ DB.forEach(d=>{
+  if(!d.fabricacao)return;
+  const key=d.fabricacao.toISOString().slice(0,10);
+  const type=norm(d.grupo).includes('ketchup')?'ketchup':(norm(d.grupo).includes('mostarda')||norm(d.grupo).includes('mustard')?'mostarda':null);
+  if(!type)return;
+  if(!maps[type].has(key))maps[type].set(key,{date:d.fabricacao,saldo:0});
+  maps[type].get(key).saldo+=d.saldo;
+ });
+ const kRows=[...maps.ketchup.values()].sort((a,b)=>a.date-b.date);
+ const mRows=[...maps.mostarda.values()].sort((a,b)=>a.date-b.date);
+ document.getElementById('manufactureChart').innerHTML=
+  `<div class="chart-bars-title">Caixas por data de fabricação</div>
+   <div class="manufacture-two-charts">
+    ${buildChart(kRows,'Ketchup BK','#fa0000','manufactureDataKetchup')}
+    ${buildChart(mRows,'Mostarda BK','#ff970f','manufactureDataMostarda')}
+   </div>`;
+}
+function toggleManufactureData(id,button){
+ const box=document.getElementById(id);
+ if(!box)return;
+ const opening=box.hasAttribute('hidden');
+ if(opening){
+  box.removeAttribute('hidden');
+  button.textContent='▾ Ocultar dados';
+ }else{
+  box.setAttribute('hidden','');
+  button.textContent='▸ Mostrar dados';
+ }
+}
+function renderLotChart(){
+ const presetEl=document.getElementById('expiryPreset');
+ const startEl=document.getElementById('expiryStartDate');
+ const endEl=document.getElementById('expiryEndDate');
+ const mode=presetEl?.value||'90';
+ const now=new Date();
+ const today=new Date(now.getFullYear(),now.getMonth(),now.getDate(),12);
+ let startDate=today;
+ let endDate=new Date(today);
+
+ if(mode==='custom'){
+   if(!startEl?.value || !endEl?.value){
+     document.getElementById('lotChart').innerHTML=`<div class="alert-empty">
+       <div class="alert-empty-title">Selecione o período personalizado</div>
+       <div class="alert-empty-text">Informe a data inicial e a data final para consultar os lotes.</div>
+     </div>`;
+     return;
+   }
+   const [sy,sm,sd]=startEl.value.split('-').map(Number);
+   const [ey,em,ed]=endEl.value.split('-').map(Number);
+   startDate=new Date(sy,sm-1,sd,12);
+   endDate=new Date(ey,em-1,ed,12);
+ }else{
+   const presetDays=Number(mode||90);
+   endDate.setDate(endDate.getDate()+presetDays);
+ }
+
+ const alerts=DB.filter(d=>{
+   if(!d.validade)return false;
+   const v=new Date(d.validade.getFullYear(),d.validade.getMonth(),d.validade.getDate(),12);
+   return v>=startDate && v<=endDate;
+ }).slice().sort((a,b)=>a.validade-b.validade||b.saldo-a.saldo);
+
+ const el=document.getElementById('lotChart');
+ const periodText=`${startDate.toLocaleDateString('pt-BR')} até ${endDate.toLocaleDateString('pt-BR')}`;
+
+ if(!alerts.length){
+  el.innerHTML=`<div class="alert-empty">
+    <div class="alert-empty-title">Nenhum lote em Alerta de Vencimento</div>
+    <div class="alert-empty-text">Não há lotes com validade entre ${periodText}.</div>
+  </div>`;
+  return;
+ }
+ const max=Math.max(1,...alerts.map(x=>x.saldo));
+ el.innerHTML=`<div class="chart-bars-title">Lotes com vencimento no período · ${periodText}</div>`+
+ alerts.map(x=>{
+   const days=daysUntil(x.validade);
+   const status=days<0?'Vencido':days===0?'Vence hoje':`Vence em ${days} dias`;
+   return `<div class="chart-bar-row">
+    <div class="chart-bar-label" title="${esc(x.lote)}">${esc(x.lote)} · ${esc(x.grupo)} · ${x.validade.toLocaleDateString('pt-BR')}</div>
+    <div class="chart-bar-track"><div class="chart-bar-fill" style="width:${(x.saldo/max*100).toFixed(2)}%;background:${chartColor(x.grupo)}"></div></div>
+    <div class="chart-bar-value">${fmt(x.saldo)} cx</div>
+   </div><div class="alert-status">${status}</div>`;
+ }).join('');
+}
+function renderExpiryChart(){
+ const map=new Map();
+ DB.forEach(d=>{
+  if(!d.validade)return;
+  const k=`${d.validade.getFullYear()}-${String(d.validade.getMonth()+1).padStart(2,'0')}`;
+  if(!map.has(k))map.set(k,{label:d.validade.toLocaleDateString('pt-BR',{month:'2-digit',year:'numeric'}),date:new Date(d.validade.getFullYear(),d.validade.getMonth(),1),k:0,m:0});
+  const x=map.get(k);
+  const g=norm(d.grupo);
+  if(g.includes('ketchup')||g.includes('catchup'))x.k+=d.saldo;
+  else if(g.includes('mostarda')||g.includes('mustard'))x.m+=d.saldo;
+ });
+ const rows=[...map.values()].sort((a,b)=>a.date-b.date);
+ const max=Math.max(1,...rows.map(x=>Math.max(x.k,x.m)));
+ const W=1400,H=430,L=72,R=24,T=32,B=70,PH=H-T-B,PW=W-L-R;
+ const xStep=PW/Math.max(1,rows.length),barW=Math.max(6,Math.min(18,xStep*.25));
+ let svg=`<svg class="expiry-svg" viewBox="0 0 ${W} ${H}" preserveAspectRatio="none" role="img" aria-label="Vencimentos por mês separados por SKU">`;
+ const step=Math.max(100,Math.ceil(max/5/100)*100),yMax=Math.max(step*5,max);
+ for(let i=0;i<=5;i++){
+   const v=i*step,y=T+PH-(v/yMax)*PH;
+   svg+=`<line x1="${L}" y1="${y}" x2="${W-R}" y2="${y}" class="expiry-gridline"/>`;
+   svg+=`<text x="${L-10}" y="${y+4}" text-anchor="end" class="expiry-axis-y">${fmt(v)}</text>`;
+ }
+ svg+=`<line x1="${L}" y1="${T+PH}" x2="${W-R}" y2="${T+PH}" class="expiry-axis"/><line x1="${L}" y1="${T}" x2="${L}" y2="${T+PH}" class="expiry-axis"/>`;
+ const every=Math.max(1,Math.ceil(rows.length/14));
+ rows.forEach((x,i)=>{
+   const cx=L+xStep*(i+.5),kh=x.k/yMax*PH,mh=x.m/yMax*PH,kx=cx-barW-2,mx=cx+2;
+   if(x.k>0){
+    const y=T+PH-kh;
+    svg+=`<rect x="${kx}" y="${y}" width="${barW}" height="${kh}" rx="3" fill="#fa0000"><title>${x.label} · Ketchup BK: ${fmt(x.k)} caixas</title></rect>`;
+    svg+=`<text x="${kx+barW/2}" y="${Math.max(T+12,y-7)}" text-anchor="middle" class="expiry-value-label" fill="#fa0000">${fmt(x.k)}</text>`;
+   }
+   if(x.m>0){
+    const y=T+PH-mh;
+    svg+=`<rect x="${mx}" y="${y}" width="${barW}" height="${mh}" rx="3" fill="#ff970f"><title>${x.label} · Mostarda BK: ${fmt(x.m)} caixas</title></rect>`;
+    svg+=`<text x="${mx+barW/2}" y="${Math.max(T+12,y-7)}" text-anchor="middle" class="expiry-value-label" fill="#ff970f">${fmt(x.m)}</text>`;
+   }
+   if(i%every===0||i===rows.length-1){
+    svg+=`<text x="${cx}" y="${H-42}" text-anchor="middle" class="expiry-axis-x">${x.label}</text>`;
+   }
+ });
+ svg+=`<text x="${(L+W-R)/2}" y="${H-10}" text-anchor="middle" class="expiry-axis-title">Mês de validade</text>`;
+ svg+=`<text x="16" y="${T+PH/2}" text-anchor="middle" transform="rotate(-90 16 ${T+PH/2})" class="expiry-axis-title">Quantidade de caixas</text></svg>`;
+ document.getElementById('expiryChart').innerHTML=
+ `<div class="chart-bars-title">Caixas por mês de validade · separado por SKU</div>
+  <div class="chart-legend"><span><i class="chart-dot" style="background:#fa0000"></i>Ketchup BK</span><span><i class="chart-dot" style="background:#ff970f"></i>Mostarda BK</span></div>
+  <div class="expiry-chart-wrap">${svg}</div>`;
+}
+
+function renderSku(){
+ const map=new Map();
+ DB.forEach(d=>{const k=d.sku||d.produto;if(!map.has(k))map.set(k,{sku:k,produto:d.produto,lotes:new Set(),saldo:0,fab:null,val:null});const x=map.get(k);x.lotes.add(d.lote);x.saldo+=d.saldo;if(d.fabricacao&&(!x.fab||d.fabricacao<x.fab))x.fab=d.fabricacao;if(d.validade&&(!x.val||d.validade<x.val))x.val=d.validade;});
+ document.getElementById('skuBody').innerHTML=[...map.values()].sort((a,b)=>b.saldo-a.saldo).map(x=>`<tr><td>${esc(x.sku)}</td><td>${esc(x.produto)}</td><td class="num">${fmt(x.lotes.size)}</td><td class="num"><b>${fmt(x.saldo)}</b></td><td>${x.fab?x.fab.toLocaleDateString('pt-BR'):'Não identificada'}</td><td>${x.val?x.val.toLocaleDateString('pt-BR'):'-'}</td></tr>`).join('')||'<tr><td colspan="6">Nenhum dado.</td></tr>';
+}
+function renderManufacture(){
+ // Compatibilidade: a visualização por fabricação é renderizada por renderManufactureChart().
+ // A tabela consolidada antiga foi removida para evitar uma lista extensa.
+}
+
+function renderExpiry(){
+ const rows=DB.slice().sort((a,b)=>a.validade-b.validade).filter(d=>daysUntil(d)<=90);
+ document.getElementById('expiryBody').innerHTML=rows.map(d=>{const st=expiryStatus(d);return `<tr><td><span class="pill">${esc(d.grupo)}</span></td><td>${esc(d.lote)}</td><td>${d.fabricacao?d.fabricacao.toLocaleDateString('pt-BR'):'Não identificada'}</td><td><b>${d.validade.toLocaleDateString('pt-BR')}</b></td><td class="num"><b>${fmt(d.saldo)}</b></td><td><span class="${st.cls}">${st.label}</span></td></tr>`}).join('')||'<tr><td colspan="6">Nenhum lote vence nos próximos 90 dias e nenhum lote está vencido.</td></tr>';
+}
+
+
+function openDatePicker(id){
+ const input=document.getElementById(id);
+ if(!input)return;
+ input.focus();
+ if(typeof input.showPicker==='function'){
+   try{ input.showPicker(); }catch(e){}
+ }
+}
+function applyExpiryFilters(){
+ const preset=document.getElementById('expiryPreset');
+ if(preset && preset.value!=='custom') return;
+ renderLotChart();
+}
+function clearExpiryDates(){
+ const start=document.getElementById('expiryStartDate');
+ const end=document.getElementById('expiryEndDate');
+ if(start)start.value='';
+ if(end)end.value='';
+ renderLotChart();
+}
+function updateExpiryFilterMode(){
+ const preset=document.getElementById('expiryPreset');
+ const custom=document.getElementById('customExpiryControls');
+ if(!preset||!custom)return;
+ const isCustom=preset.value==='custom';
+ if(isCustom){
+   custom.removeAttribute('hidden');
+   renderLotChart();
+ }else{
+   custom.setAttribute('hidden','');
+   const start=document.getElementById('expiryStartDate');
+   const end=document.getElementById('expiryEndDate');
+   if(start)start.value='';
+   if(end)end.value='';
+   renderLotChart();
+ }
+}
+function toggleMonthlyData(){
+ const section=document.getElementById('monthlyDataSection');
+ const button=document.getElementById('monthlyDataToggle');
+ if(!section||!button)return;
+ const opening=section.hasAttribute('hidden');
+ if(opening){
+  section.removeAttribute('hidden');
+  button.textContent='▾ Ocultar dados';
+  section.scrollIntoView({behavior:'smooth',block:'start'});
+ }else{
+  section.setAttribute('hidden','');
+  button.textContent='▸ Mostrar dados';
+ }
+}
 function draw(){
+ const dataCards=document.querySelectorAll('.data-cards');const dataSections=document.querySelectorAll('.data-section');
+ if(!DB.length){dataCards.forEach(el=>el.classList.remove('visible'));dataSections.forEach(el=>el.classList.remove('visible'));return;}
+ dataCards.forEach(el=>el.classList.add('visible'));dataSections.forEach(el=>el.classList.add('visible'));
  const names=[...new Set(DB.map(d=>d.grupo))];
  const months=[...new Set(DB.map(d=>d.mes))].sort((a,b)=>{let [am,ay]=a.split('/').map(Number),[bm,by]=b.split('/').map(Number);return ay-by||am-bm});
  const old=month.value;month.innerHTML='<option value="Todos">Todos os meses</option>'+months.map(m=>`<option value="${m}">${monthLabel(m)}</option>`).join('');if(months.includes(old))month.value=old;
@@ -92,6 +909,8 @@ function draw(){
  const total=DB.reduce((a,d)=>a+d.saldo,0);
  document.getElementById('cards').innerHTML=cards+`<div class="card total"><div class="label">Total geral para revisar</div><div class="value">${fmt(total)}</div><div class="mini">Soma dos produtos identificados pelo SKU</div></div>`;
  document.getElementById('subtitle').textContent=DB.length?`Posição por produto (SKU) e vencimento mensal · Atualizado em ${new Date().toLocaleDateString('pt-BR')}`:'Importe a planilha Excel para atualizar os dados do dashboard.';
+ document.getElementById('cardsExtra').innerHTML='';
+ renderSku(); renderManufacture(); renderExpiry(); renderSkuChart(); renderManufactureChart(); renderLotChart(); renderExpiryChart();
  const groups=(month.value==='Todos'?months:months.filter(x=>x===month.value)).map(key=>{let rows=filtered().filter(d=>d.mes===key);return {key,label:monthLabel(key),vals:names.map(n=>rows.filter(d=>d.grupo===n).reduce((a,d)=>a+d.saldo,0))}});
  const vals=groups.flatMap(g=>g.vals),max=Math.max(1,...vals),stepY=Math.max(1,Math.ceil(max/4/100)*100),ymax=stepY*4,W=1400,H=480,L=90,R=30,T=28,B=90,ph=H-T-B,pw=W-L-R,step=pw/Math.max(1,groups.length);
  let svg='';for(let i=0;i<=4;i++){let v=ymax*i/4,y=T+ph-(v/ymax)*ph;svg+=`<line x1="${L}" y1="${y}" x2="${W-R}" y2="${y}" class="gridline"/><text x="${L-14}" y="${y+4}" text-anchor="end" class="axis">${fmt(v)}</text>`}
@@ -103,13 +922,13 @@ function draw(){
  const monthly=months.map(key=>{let rows=DB.filter(d=>d.mes===key),sums=names.map(n=>rows.filter(d=>d.grupo===n).reduce((a,d)=>a+d.saldo,0));return `<tr><td>${monthLabel(key)}</td>${sums.map(v=>`<td class="num">${fmt(v)}</td>`).join('')}<td class="num"><b>${fmt(sums.reduce((a,b)=>a+b,0))}</b></td></tr>`}).join('');
  const totals=names.map(n=>DB.filter(d=>d.grupo===n).reduce((a,d)=>a+d.saldo,0));
  document.getElementById('monthlyBody').innerHTML=monthly+`<tr class="totalrow"><td>TOTAL GERAL</td>${totals.map(v=>`<td class="num">${fmt(v)}</td>`).join('')}<td class="num">${fmt(totals.reduce((a,b)=>a+b,0))}</td></tr>`;
- const details=filtered().slice().sort((a,b)=>a.validade-b.validade||a.grupo.localeCompare(b.grupo)||a.lote.localeCompare(b.lote));
- document.getElementById('detailBody').innerHTML=details.map(d=>`<tr><td><span class="pill">${d.grupo}</span></td><td>${d.material}</td><td>${d.lote}</td><td>${d.validade.toLocaleDateString('pt-BR')}</td><td class="num"><b>${fmt(d.saldo)}</b></td></tr>`).join('')||'<tr><td colspan="5">Nenhum registro encontrado.</td></tr>';
+ updateDetailFilterOptions();
+ renderDetailTable();
 }
 
 function saveUpdatedHtml(){
  if(!DB.length){status.className='status error';status.textContent='Importe os dados antes de salvar o HTML.';return;}
- const payload=DB.map(d=>({...d,validade:d.validade instanceof Date?d.validade.toISOString():d.validade}));
+ const payload=DB.map(d=>({...d,validade:d.validade instanceof Date?d.validade.toISOString():d.validade,fabricacao:d.fabricacao instanceof Date?d.fabricacao.toISOString():d.fabricacao}));
  const safe=JSON.stringify(payload).replace(/</g,'\\u003c').replace(/>/g,'\\u003e').replace(/&/g,'\\u0026');
  const exportDoc=document.documentElement.cloneNode(true);
  const importPanel=exportDoc.querySelector('.import');
@@ -121,7 +940,7 @@ function saveUpdatedHtml(){
  const blob=new Blob([saved],{type:'text/html;charset=utf-8'});
  const url=URL.createObjectURL(blob);
  const a=document.createElement('a');a.href=url;a.download='dashboard_estoque_revisao_bk_atualizado.html';document.body.appendChild(a);a.click();a.remove();URL.revokeObjectURL(url);
- status.className='status ok';status.textContent='HTML atualizado preparado para salvar, com os dados importados incorporados.';
+ if(status){status.className='status ok';status.textContent='HTML atualizado preparado para salvar, com os dados importados incorporados.';}
 }
 
 let workbook=null;
@@ -138,17 +957,45 @@ fileInput.addEventListener('change',async e=>{
 document.getElementById('importSheets').addEventListener('click',()=>{
  try{if(!workbook)throw new Error('Selecione primeiro um arquivo Excel.');
  const selected=[...sheetList.querySelectorAll('input[type="checkbox"]:checked')].map(x=>x.value);if(!selected.length)throw new Error('Selecione pelo menos uma aba para importar.');
- const rows=selected.flatMap(name=>parseSheet(workbook,name));if(!rows.length)throw new Error('Nenhum registro válido foi encontrado nas abas selecionadas. Verifique se elas possuem as colunas Material, SKU, Lote, Data Validade e Saldo Atual.');
- DB=rows;document.getElementById('saveHtml').disabled=false;product.innerHTML='<option value="Todos">Todos os produtos</option>'+[...new Set(DB.map(d=>d.grupo))].map(n=>`<option value="${n}">${n}</option>`).join('');product.value='Todos';month.value='Todos';search.value='';draw();status.className='status ok';status.textContent=`Importação concluída: ${rows.length} lotes importados de ${selected.length} aba(s): ${selected.join(', ')}.`;
+ const rawRows=selected.flatMap(name=>parseSheet(workbook,name));if(!rawRows.length)throw new Error('Nenhum registro válido foi encontrado nas abas selecionadas. Verifique se elas possuem Material, SKU/Texto Brv/Produto, Lote, Data Validade e Saldo Atual.');
+ const unique=new Map();rawRows.forEach(d=>{const k=`${d.material}|${d.lote}|${d.validade.toISOString().slice(0,10)}`;if(!unique.has(k))unique.set(k,d);});
+ const rows=[...unique.values()];
+ DB=rows;document.getElementById('saveHtml').disabled=false;product.innerHTML='<option value="Todos">Todos os produtos</option>'+[...new Set(DB.map(d=>d.grupo))].map(n=>`<option value="${n}">${n}</option>`).join('');product.value='Todos';month.value='Todos';search.value='';draw();status.className='status ok';status.textContent=`Importação concluída: ${rows.length} lotes únicos importados de ${selected.length} aba(s): ${selected.join(', ')}.`;
  }catch(err){status.className='status error';status.textContent=err.message||'Erro ao importar as abas selecionadas.'}
 });
 }
 [product,month,search].forEach(el=>el.addEventListener('input',draw));
 if(Array.isArray(SAVED_DATA)&&SAVED_DATA.length){
- DB=SAVED_DATA.map(d=>({...d,validade:new Date(d.validade)}));
+ DB=SAVED_DATA.map(d=>({...d,validade:new Date(d.validade),fabricacao:d.fabricacao?new Date(d.fabricacao):manufactureDateFromLot(d.lote)}));
  const saveButton=document.getElementById('saveHtml');if(saveButton)saveButton.disabled=false;
  product.innerHTML='<option value="Todos">Todos os produtos</option>'+[...new Set(DB.map(d=>d.grupo))].map(n=>`<option value="${n}">${n}</option>`).join('');
  if(status){status.className='status ok';status.textContent=`Dashboard carregado com ${DB.length} lotes salvos no HTML.`;}
 }
 draw();
+
+document.addEventListener('DOMContentLoaded',()=>{
+ const preset=document.getElementById('expiryPreset');
+ const apply=document.getElementById('expiryApplyDate');
+ const clear=document.getElementById('expiryClearDate');
+ if(preset) preset.addEventListener('change',updateExpiryFilterMode);
+ if(apply) apply.addEventListener('click',applyExpiryFilters);
+ if(clear) clear.addEventListener('click',clearExpiryDates);
+ updateExpiryFilterMode();
+});
+
+document.addEventListener('DOMContentLoaded',()=>{
+ const lot=document.getElementById('detailLotFilter');
+ const sku=document.getElementById('detailSkuFilter');
+ const val=document.getElementById('detailValidityFilter');
+ const clear=document.getElementById('detailClearFilters');
+ if(lot)lot.addEventListener('input',renderDetailTable);
+ if(sku)sku.addEventListener('change',renderDetailTable);
+ if(val)val.addEventListener('change',renderDetailTable);
+ if(clear)clear.addEventListener('click',()=>{
+   if(lot)lot.value='';
+   if(sku)sku.value='Todos';
+   if(val)val.value='Todos';
+   renderDetailTable();
+ });
+});
 </script></body></html>
